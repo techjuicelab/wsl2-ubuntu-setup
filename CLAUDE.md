@@ -44,6 +44,10 @@ rg --version && fd --version && jq --version && lazygit --version && delta --ver
 
 ## When Editing Scripts
 
-- Maintain the numbered stage pattern (`echo "=== [Stage N] ..."`) for consistent output
+- Maintain the numbered stage pattern for consistent output
+  - setup.sh: `echo "=== N. 제목 ==="`
+  - dev-tools.sh: `print_header "N. Title"` (colorized helper functions)
 - dev-tools.sh uses `|| true` on some commands (e.g., asdf plugin adds) to handle idempotent re-runs
+- dev-tools.sh guards `.zshrc` appends with `grep -q` checks to avoid duplicates on re-run
 - The .zshrc is **generated** by setup.sh (Stage 11) and **appended to** by dev-tools.sh — do not treat it as a standalone file to edit directly
+- README.md is written in Korean — maintain Korean for all user-facing documentation
