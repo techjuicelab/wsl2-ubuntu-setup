@@ -52,7 +52,7 @@ git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
 
 echo "=== 8. asdf v0.18.0 설치 ==="
 mkdir -p ~/.local/bin
-curl -sSfL https://github.com/asdf-vm/asdf/releases/download/v0.18.0/asdf-linux-amd64.tar.gz \
+curl -sSfL -L https://github.com/asdf-vm/asdf/releases/download/v0.18.0/asdf-v0.18.0-linux-amd64.tar.gz \
   | tar xz -C ~/.local/bin/
 
 echo "=== 9. .zshrc 설정 ==="
