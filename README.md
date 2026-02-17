@@ -4,6 +4,8 @@ Windows 11 WSL2 환경에서 Ubuntu 개발 환경을 자동으로 구성하는 �
 
 ## 포함 도구
 
+### setup.sh — 기본 환경
+
 | 도구 | 버전 | 설명 |
 |------|------|------|
 | Zsh | 최신 | 기본 쉘 |
@@ -18,6 +20,24 @@ Windows 11 WSL2 환경에서 Ubuntu 개발 환경을 자동으로 구성하는 �
 | bat | 최신 | 구문 강조 cat 대체 |
 | zoxide | 최신 | 스마트 디렉토리 이동 |
 | asdf | v0.18.0 | 런타임 버전 관리자 |
+
+### dev-tools.sh — 개발 도구 (선택)
+
+| 도구 | 설명 |
+|------|------|
+| Node.js | asdf를 통해 최신 LTS 설치 |
+| Python | asdf를 통해 최신 버전 설치 (컴파일) |
+| pipx | Python 애플리케이션 격리 설치 |
+| Claude Code | Anthropic AI 코딩 에이전트 |
+| OpenCode | 오픈소스 AI 코딩 에이전트 |
+| Gemini CLI | Google AI 코딩 에이전트 |
+| SuperClaude | Claude Code 프레임워크 확장 |
+| GitHub CLI (gh) | GitHub 공식 CLI |
+| ripgrep (rg) | 빠른 정규식 검색 (grep 대체) |
+| fd-find (fd) | 빠른 파일 검색 (find 대체) |
+| jq | JSON 처리 도구 |
+| lazygit | 터미널 Git UI |
+| delta | Git diff 구문 강조 |
 
 ### Oh My Zsh 플러그인
 
@@ -93,7 +113,7 @@ git config --global user.name "your-name"
 cd ~
 git clone https://github.com/techjuicelab/wsl2-ubuntu-setup.git dotfiles
 
-# 3. 셋업 스크립트 실행
+# 3. 기본 환경 셋업
 cd dotfiles
 chmod +x setup.sh
 ./setup.sh
@@ -108,6 +128,28 @@ fzf --version
 eza --version
 bat --version
 zoxide --version
+```
+
+### 개발 도구 설치 (선택)
+
+setup.sh 완료 후, AI 에이전트와 추가 개발 도구를 설치하려면:
+
+```bash
+chmod +x dev-tools.sh
+./dev-tools.sh
+
+# 적용
+source ~/.zshrc
+```
+
+설치 후 각 도구의 인증이 필요합니다:
+
+```bash
+claude          # Claude Code 인증
+opencode        # OpenCode 인증
+gemini          # Gemini CLI 인증
+gh auth login   # GitHub CLI 인증
+superclaude mcp # MCP 서버 설치 (선택)
 ```
 
 ### Ubuntu 삭제 후 재설치하는 경우
@@ -275,6 +317,48 @@ git checkout <Tab>   # 브랜치 목록
 kill <Tab>    # 프로세스 목록 + 정보 미리보기
 ```
 
+### lazygit
+
+```bash
+lg            # lazygit 실행 (alias)
+```
+
+터미널 기반 Git UI입니다. 스테이징, 커밋, 브랜치 관리, 리베이스 등을 키보드로 빠르게 수행할 수 있습니다.
+
+### ripgrep (grep 대체)
+
+```bash
+rg "검색어"           # 현재 디렉토리에서 재귀 검색 (smart-case 기본)
+rg "패턴" src/        # 특정 디렉토리에서 검색
+rg -t py "import"     # 파일 타입 필터링
+```
+
+### fd (find 대체)
+
+```bash
+fd "패턴"             # 파일명 검색
+fd -e js              # 확장자로 검색
+fd -t d               # 디렉토리만 검색
+```
+
+### delta (git diff)
+
+git diff, git log, git show 실행 시 자동으로 적용됩니다.
+
+```bash
+git diff              # side-by-side 컬러 diff
+git log -p            # 커밋별 변경 내용 (구문 강조)
+```
+
+### GitHub CLI
+
+```bash
+gh repo clone owner/repo   # 레포지토리 클론
+gh pr create               # Pull Request 생성
+gh pr list                 # PR 목록 확인
+gh issue list              # 이슈 목록 확인
+```
+
 ---
 
 ## 폴더 구조
@@ -291,7 +375,8 @@ Windows
 Ubuntu (각 인스턴스)
 └── ~/
     ├── dotfiles/                # 이 레포지토리
-    │   ├── setup.sh
+    │   ├── setup.sh             # 기본 환경 셋업
+    │   ├── dev-tools.sh         # 개발 도구 설치 (선택)
     │   └── README.md
     ├── .oh-my-zsh/              # Oh My Zsh
     │   └── custom/
@@ -305,8 +390,11 @@ Ubuntu (각 인스턴스)
     ├── .ssh/                    # SSH 키 (setup.sh가 자동 복원)
     ├── .local/bin/
     │   ├── asdf                 # asdf 바이너리
-    │   └── bat                  # bat 심볼릭 링크
+    │   ├── bat                  # bat 심볼릭 링크
+    │   └── fd                   # fd 심볼릭 링크
     ├── .asdf/                   # asdf 데이터 (플러그인, 버전)
+    ├── .npm-global/             # npm 글로벌 패키지
+    ├── .tool-versions           # asdf 글로벌 런타임 버전
     ├── .zshrc                   # Zsh 설정
     ├── .p10k.zsh                # Powerlevel10k 설정
     └── .fzf/                    # fzf
@@ -341,6 +429,14 @@ rm -rf ~/.oh-my-zsh ~/.fzf ~/.asdf ~/.local/bin/asdf ~/.local/bin/bat
 ./setup.sh
 ```
 
+### dev-tools.sh 실행 중 에러가 나는 경우
+
+대부분의 Stage는 멱등성을 가지고 있어 재실행이 가능합니다. asdf 플러그인 추가는 이미 있으면 자동으로 건너뜁니다.
+
+```bash
+./dev-tools.sh
+```
+
 ### p10k 설정 마법사 다시 실행
 
 ```bash
@@ -350,6 +446,7 @@ p10k configure
 ### 전체 설치 확인
 
 ```bash
+# 기본 환경 (setup.sh)
 zsh --version
 asdf --version
 fzf --version
@@ -358,4 +455,15 @@ bat --version
 zoxide --version
 ls ~/.oh-my-zsh/custom/plugins/
 ssh -T git@github.com
+
+# 개발 도구 (dev-tools.sh)
+node --version && npm --version
+python --version
+claude --version
+gh --version
+rg --version
+fd --version
+jq --version
+lazygit --version
+delta --version
 ```
