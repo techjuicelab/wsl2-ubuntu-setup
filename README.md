@@ -126,6 +126,7 @@ wsl --export Ubuntu-24.04 "C:\Users\techjuice\Documents\dev\wsl-base.tar"
 ### 2. 원하는 이름으로 복제
 
 ```powershell
+mkdir "C:\Users\techjuice\Documents\dev\wsl"
 wsl --import Ubuntu-Dev "C:\Users\techjuice\Documents\dev\wsl\dev" "C:\Users\techjuice\Documents\dev\wsl-base.tar"
 wsl --import Ubuntu-Test "C:\Users\techjuice\Documents\dev\wsl\test" "C:\Users\techjuice\Documents\dev\wsl-base.tar"
 ```
