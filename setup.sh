@@ -36,8 +36,10 @@ echo "=== 7. fzf 설치 ==="
 git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
 ~/.fzf/install --all --no-bash --no-fish
 
-echo "=== 8. asdf 설치 ==="
-git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.15.0
+echo "=== 8. asdf v0.18.0 설치 ==="
+mkdir -p ~/.local/bin
+curl -sSfL https://github.com/asdf-vm/asdf/releases/download/v0.18.0/asdf-linux-amd64.tar.gz \
+  | tar xz -C ~/.local/bin/
 
 echo "=== 9. .zshrc 설정 ==="
 cat > ~/.zshrc << 'EOF'
@@ -62,8 +64,9 @@ plugins=(
 fpath+=${ZSH_CUSTOM:-${ZSH:-~/.oh-my-zsh}/custom}/plugins/zsh-completions/src
 source $ZSH/oh-my-zsh.sh
 
-. "$HOME/.asdf/asdf.sh"
-fpath=(${ASDF_DIR}/completions $fpath)
+export PATH="$HOME/.local/bin:$PATH"
+export ASDF_DATA_DIR="$HOME/.asdf"
+export PATH="$ASDF_DATA_DIR/shims:$PATH"
 autoload -Uz compinit && compinit
 
 export EDITOR='vim'
