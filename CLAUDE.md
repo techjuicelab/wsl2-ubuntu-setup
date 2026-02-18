@@ -12,6 +12,7 @@ Two-stage sequential installation:
 
 1. **setup.sh** — Base environment: system packages, zsh + Oh My Zsh + Powerlevel10k, modern CLI tools (eza, bat, fzf, zoxide), and asdf v0.18.0 runtime manager. Generates `~/.zshrc` with all plugin/alias/PATH configuration.
 2. **dev-tools.sh** — Developer tools (requires setup.sh first): Node.js and Python via asdf, AI agents (Claude Code, OpenCode, Gemini CLI, SuperClaude), GitHub CLI, ripgrep, fd-find, jq, lazygit, delta (git diff pager). Appends additional config to `~/.zshrc`.
+3. **claude-config.sh** — Standalone Claude Code settings backup/restore. Copies `settings.json`, `commands/`, and MCP server config (`mcpServers` key from `~/.claude.json`) to/from Windows host path for sharing across WSL instances.
 
 Both scripts use `set -e` (exit on first error). dev-tools.sh uses colorized output for stage tracking.
 
@@ -24,6 +25,8 @@ Both scripts use `set -e` (exit on first error). dev-tools.sh uses colorized out
 - **~/.local/bin** prioritized in PATH for user-installed tools to override system versions
 - **WSL instance cloning** supported via `wsl --export` / `wsl --import`
 - **Automatic SSH remote switch**: Both `setup.sh` (Stage 12) and `ssh-setup.sh` automatically convert the dotfiles git remote from HTTPS to SSH after SSH key setup. Uses `sed` to transform `https://github.com/` → `git@github.com:`. If a new key was generated, a warning is shown that GitHub registration is required before pushing.
+- **Claude Code native installer**: Claude Code uses the official native binary installer (`curl -fsSL https://claude.ai/install.sh | bash`) instead of the deprecated npm shim. Binary installs to `~/.local/share/claude/versions/` with symlink at `~/.local/bin/claude` (already in PATH).
+- **Claude Code config backup/restore**: `claude-config.sh` backs up `settings.json`, `commands/`, and MCP server settings to `/mnt/c/Users/techjuice/Documents/dev/.claude-config/` for sharing across WSL instances (same pattern as SSH key sharing). MCP restore uses `jq` to merge only the `mcpServers` key, preserving existing auth data.
 - **OpenCode PATH fix**: OpenCode installs to `~/.opencode/bin/` and its installer uses `$SHELL` to detect which config file to update. When running under `#!/bin/bash`, it may write to `.bashrc` instead of `.zshrc`. dev-tools.sh explicitly appends `~/.opencode/bin` to `.zshrc` after installation to ensure it's always available in zsh.
 
 ## Verification Commands

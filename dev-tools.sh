@@ -154,9 +154,9 @@ print_done "pipx installed"
 # =============================================================================
 print_header "5. AI Coding Agents"
 
-# --- Claude Code ---
-print_step "Installing Claude Code..."
-npm install -g @anthropic-ai/claude-code
+# --- Claude Code (native installer) ---
+print_step "Installing Claude Code (native binary)..."
+curl -fsSL https://claude.ai/install.sh | bash
 print_done "Claude Code $(claude --version 2>/dev/null || echo '(installed)') installed"
 
 # --- OpenCode ---
@@ -195,9 +195,58 @@ print_info "Run 'superclaude mcp --list' to see available MCP servers"
 print_info "Run 'superclaude mcp' for interactive MCP installation"
 
 # =============================================================================
-# 7. GitHub CLI (gh)
+# 7. Claude Code Config Restore
 # =============================================================================
-print_header "7. GitHub CLI (gh)"
+print_header "7. Claude Code Config Restore"
+
+WIN_CLAUDE_CONFIG="/mnt/c/Users/techjuice/Documents/dev/.claude-config"
+
+if [ -d "$WIN_CLAUDE_CONFIG" ]; then
+    print_step "Windows 백업에서 Claude Code 설정 복원 중..."
+
+    # settings.json 복원
+    if [ -f "$WIN_CLAUDE_CONFIG/settings.json" ]; then
+        mkdir -p ~/.claude
+        cp "$WIN_CLAUDE_CONFIG/settings.json" ~/.claude/settings.json
+        print_done "settings.json 복원 완료"
+    fi
+
+    # commands/ 복원
+    if [ -d "$WIN_CLAUDE_CONFIG/commands" ]; then
+        mkdir -p ~/.claude
+        rm -rf ~/.claude/commands
+        cp -r "$WIN_CLAUDE_CONFIG/commands" ~/.claude/commands
+        print_done "commands/ 복원 완료"
+    fi
+
+    # MCP 서버 설정 복원 (mcpServers 키만 merge)
+    if [ -f "$WIN_CLAUDE_CONFIG/mcp-servers.json" ]; then
+        # jq가 없으면 먼저 설치 (Stage 9에서 다시 설치해도 idempotent)
+        if ! command -v jq &> /dev/null; then
+            print_step "MCP 복원에 jq가 필요합니다. 설치 중..."
+            sudo apt install -y jq
+        fi
+        if [ -f ~/.claude.json ]; then
+            backup_mcp=$(jq '.mcpServers' "$WIN_CLAUDE_CONFIG/mcp-servers.json")
+            jq --argjson mcp "$backup_mcp" '.mcpServers = $mcp' ~/.claude.json > ~/.claude.json.tmp
+            mv ~/.claude.json.tmp ~/.claude.json
+            print_done "mcpServers 복원 완료 (기존 설정에 merge)"
+        else
+            cp "$WIN_CLAUDE_CONFIG/mcp-servers.json" ~/.claude.json
+            print_done "mcpServers 복원 완료 (새로 생성)"
+        fi
+    fi
+
+    print_done "Claude Code 설정 복원 완료"
+else
+    print_info "Windows 백업 없음: $WIN_CLAUDE_CONFIG"
+    print_info "설정 백업은 'bash claude-config.sh backup'으로 수행하세요."
+fi
+
+# =============================================================================
+# 8. GitHub CLI (gh)
+# =============================================================================
+print_header "8. GitHub CLI (gh)"
 
 print_step "Installing GitHub CLI..."
 (type -p wget >/dev/null || (sudo apt update && sudo apt install wget -y)) \
@@ -213,9 +262,9 @@ print_step "Installing GitHub CLI..."
 print_done "GitHub CLI $(gh --version 2>/dev/null | head -1) installed"
 
 # =============================================================================
-# 8. Modern CLI Tools (apt)
+# 9. Modern CLI Tools (apt)
 # =============================================================================
-print_header "8. Modern CLI Tools"
+print_header "9. Modern CLI Tools"
 
 # --- ripgrep ---
 print_step "Installing ripgrep (rg)..."
@@ -239,9 +288,9 @@ sudo apt install -y jq
 print_done "jq $(jq --version) installed"
 
 # =============================================================================
-# 9. lazygit (latest from GitHub)
+# 10. lazygit (latest from GitHub)
 # =============================================================================
-print_header "9. lazygit"
+print_header "10. lazygit"
 
 print_step "Installing lazygit (latest release)..."
 LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | \grep -Po '"tag_name": *"v\K[^"]*')
@@ -253,9 +302,9 @@ rm -f /tmp/lazygit /tmp/lazygit.tar.gz
 print_done "lazygit v${LAZYGIT_VERSION} installed"
 
 # =============================================================================
-# 10. delta (git diff highlighter)
+# 11. delta (git diff highlighter)
 # =============================================================================
-print_header "10. delta (git diff pager)"
+print_header "11. delta (git diff pager)"
 
 print_step "Installing delta (latest release)..."
 DELTA_VERSION=$(curl -sL "https://api.github.com/repos/dandavison/delta/releases/latest" | awk -F\" '/"tag_name":/{print $(NF-1)}')
@@ -276,9 +325,9 @@ git config --global merge.conflictStyle zdiff3
 print_done "delta ${DELTA_VERSION} installed and configured with git"
 
 # =============================================================================
-# 11. Add aliases to .zshrc
+# 12. Add aliases to .zshrc
 # =============================================================================
-print_header "11. Shell Aliases & Configuration"
+print_header "12. Shell Aliases & Configuration"
 
 if ! grep -q '# dev-tools aliases' ~/.zshrc 2>/dev/null; then
     print_step "Adding aliases to .zshrc..."
@@ -331,6 +380,7 @@ echo -e "${YELLOW}  3. opencode      → authenticate OpenCode${NC}"
 echo -e "${YELLOW}  4. gemini        → authenticate Gemini CLI${NC}"
 echo -e "${YELLOW}  5. gh auth login → authenticate GitHub CLI${NC}"
 echo -e "${YELLOW}  6. superclaude mcp → install MCP servers (optional)${NC}"
+echo -e "${YELLOW}  7. bash claude-config.sh backup → backup Claude settings${NC}"
 echo ""
 echo -e "${CYAN}  After all authentication is done:${NC}"
 echo -e "${CYAN}  PowerShell> wsl --export Ubuntu-24.04 \"path\\to\\wsl-base.tar\"${NC}"

@@ -148,11 +148,12 @@ dev-tools.sh는 다음 단계를 순서대로 실행합니다:
 | Stage 4 | pipx 설치 |
 | Stage 5 | AI 코딩 에이전트 설치 (Claude Code, OpenCode, Gemini CLI) |
 | Stage 6 | SuperClaude 프레임워크 설치 |
-| Stage 7 | GitHub CLI 설치 |
-| Stage 8 | 모던 CLI 도구 설치 (ripgrep, fd-find, jq) |
-| Stage 9 | lazygit 설치 (GitHub 최신 릴리스) |
-| Stage 10 | delta 설치 및 git 연동 설정 |
-| Stage 11 | Shell alias 추가 (.zshrc에 lg, rg 등) |
+| Stage 7 | Claude Code 설정 복원 (Windows 백업에서) |
+| Stage 8 | GitHub CLI 설치 |
+| Stage 9 | 모던 CLI 도구 설치 (ripgrep, fd-find, jq) |
+| Stage 10 | lazygit 설치 (GitHub 최신 릴리스) |
+| Stage 11 | delta 설치 및 git 연동 설정 |
+| Stage 12 | Shell alias 추가 (.zshrc에 lg, rg 등) |
 
 > **참고**: Python 설치(Stage 3)는 소스 컴파일로 진행되어 수 분이 걸릴 수 있습니다.
 > 이미 설치된 도구가 있어도 멱등성이 보장되어 재실행 가능합니다.
@@ -184,7 +185,13 @@ gh auth login
 superclaude mcp
 ```
 
-모든 인증 완료 후 WSL 이미지를 내보내면 동일한 환경을 복제할 수 있습니다:
+모든 인증과 MCP 설정 완료 후, Claude Code 설정을 백업하세요:
+
+```bash
+bash claude-config.sh backup
+```
+
+그 후 WSL 이미지를 내보내면 동일한 환경을 복제할 수 있습니다:
 
 ```powershell
 # PowerShell에서
@@ -219,6 +226,32 @@ bash ssh-setup.sh
 - 키가 없으면 새로 생성하고 Windows 경로에 백업한 뒤 공개키를 출력합니다. 출력된 공개키를 GitHub에 등록하세요.
 
 ssh-setup.sh가 SSH 키 설정 후 자동으로 dotfiles remote를 SSH로 전환합니다.
+
+### Claude Code 설정 백업/복원
+
+Claude Code의 설정, 커스텀 명령어, MCP 서버 설정을 Windows 호스트에 백업하여 여러 WSL 인스턴스 간 공유할 수 있습니다.
+
+```bash
+cd ~/dotfiles
+
+# 현재 설정을 Windows에 백업
+bash claude-config.sh backup
+
+# Windows 백업에서 설정 복원
+bash claude-config.sh restore
+```
+
+백업 경로: `C:\Users\techjuice\Documents\dev\.claude-config\`
+
+| 백업 대상 | 소스 | 설명 |
+|-----------|------|------|
+| `settings.json` | `~/.claude/settings.json` | 전역 설정 |
+| `commands/` | `~/.claude/commands/` | SuperClaude 스킬 + 커스텀 명령어 |
+| `mcp-servers.json` | `~/.claude.json`의 `mcpServers` 키 | MCP 서버 설정만 추출 |
+
+> **참고**: 인증 정보(`.credentials.json`, `oauthAccount` 등)와 세션 데이터(`projects/`, `cache/` 등)는 백업에서 제외됩니다.
+
+dev-tools.sh 실행 시 Windows 백업이 존재하면 자동으로 설정을 복원합니다(Stage 7).
 
 ### Ubuntu 삭제 후 재설치하는 경우
 
@@ -537,6 +570,10 @@ gh run watch               # Actions 실행 상태 모니터링
 Windows
 └── C:\Users\techjuice\Documents\dev\
     ├── .ssh/                    # SSH 키 백업
+    ├── .claude-config/          # Claude Code 설정 백업
+    │   ├── settings.json
+    │   ├── commands/
+    │   └── mcp-servers.json
     ├── wsl-base.tar             # 베이스 이미지
     └── wsl/
         ├── dev/                 # Ubuntu-Dev 디스크
@@ -548,6 +585,7 @@ Ubuntu (각 인스턴스)
     │   ├── setup.sh             # 기본 환경 셋업
     │   ├── dev-tools.sh         # 개발 도구 설치 (선택)
     │   ├── ssh-setup.sh         # SSH 키 설정 (복제 인스턴스용)
+    │   ├── claude-config.sh     # Claude Code 설정 백업/복원
     │   └── README.md
     ├── .oh-my-zsh/              # Oh My Zsh
     │   └── custom/
@@ -633,6 +671,21 @@ dev-tools.sh는 이 문제를 자동으로 수정합니다 (`~/.opencode/bin`을
 echo 'export PATH="$HOME/.opencode/bin:$PATH"' >> ~/.zshrc
 source ~/.zshrc
 opencode
+```
+
+### Claude Code 설정이 복원되지 않는 경우
+
+dev-tools.sh Stage 7에서 설정이 복원되려면 Windows 백업이 먼저 존재해야 합니다. 최초 설치 시에는 백업이 없으므로 설정 완료 후 수동으로 백업하세요:
+
+```bash
+bash claude-config.sh backup
+```
+
+MCP 서버 설정 복원에는 `jq`가 필요합니다. Stage 7에서 자동으로 설치하지만, 수동 복원 시에는 먼저 설치하세요:
+
+```bash
+sudo apt install -y jq
+bash claude-config.sh restore
 ```
 
 ### p10k 설정 마법사 다시 실행
