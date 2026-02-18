@@ -3,6 +3,12 @@ set -e
 
 echo "=== 0. SSH 키 설정 ==="
 WIN_SSH="/mnt/c/Users/techjuice/Documents/dev/.ssh"
+
+if [ ! -d "/mnt/c/Users/techjuice" ]; then
+  echo "오류: Windows 공유 경로(/mnt/c/Users/techjuice)에 접근할 수 없습니다."
+  exit 1
+fi
+
 mkdir -p "$WIN_SSH"
 
 if [ ! -f "$WIN_SSH/id_ed25519" ]; then
@@ -42,7 +48,7 @@ sudo apt install -y eza
 # bat (구문 강조 cat 대체)
 sudo apt install -y bat
 mkdir -p ~/.local/bin
-[ ! -L ~/.local/bin/bat ] && ln -s /usr/bin/batcat ~/.local/bin/bat
+ln -sf /usr/bin/batcat ~/.local/bin/bat
 
 echo "=== 4. Zsh 기본 쉘 설정 ==="
 sudo chsh -s $(which zsh) $(whoami)
@@ -52,21 +58,29 @@ RUNZSH=no KEEP_ZSHRC=yes \
   sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
 echo "=== 6. Powerlevel10k 테마 ==="
-git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \
-  ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
+if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k" ]; then
+  git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \
+    ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
+else
+  echo "powerlevel10k 이미 설치됨, 건너뜀"
+fi
 
 echo "=== 7. 플러그인 설치 ==="
-git clone https://github.com/zsh-users/zsh-autosuggestions \
-  ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
-git clone https://github.com/zsh-users/zsh-syntax-highlighting \
-  ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
-git clone https://github.com/zsh-users/zsh-completions \
-  ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-completions
-git clone https://github.com/Aloxaf/fzf-tab \
-  ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/fzf-tab
+ZSH_PLUGINS="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins"
+
+[ ! -d "$ZSH_PLUGINS/zsh-autosuggestions" ] && \
+  git clone https://github.com/zsh-users/zsh-autosuggestions "$ZSH_PLUGINS/zsh-autosuggestions" || true
+[ ! -d "$ZSH_PLUGINS/zsh-syntax-highlighting" ] && \
+  git clone https://github.com/zsh-users/zsh-syntax-highlighting "$ZSH_PLUGINS/zsh-syntax-highlighting" || true
+[ ! -d "$ZSH_PLUGINS/zsh-completions" ] && \
+  git clone https://github.com/zsh-users/zsh-completions "$ZSH_PLUGINS/zsh-completions" || true
+[ ! -d "$ZSH_PLUGINS/fzf-tab" ] && \
+  git clone https://github.com/Aloxaf/fzf-tab "$ZSH_PLUGINS/fzf-tab" || true
 
 echo "=== 8. fzf 설치 ==="
-git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+if [ ! -d ~/.fzf ]; then
+  git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+fi
 ~/.fzf/install --all --no-bash --no-fish
 
 echo "=== 9. zoxide 설치 ==="
