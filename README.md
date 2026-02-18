@@ -137,19 +137,75 @@ setup.sh 완료 후, AI 에이전트와 추가 개발 도구를 설치하려면:
 ```bash
 chmod +x dev-tools.sh
 ./dev-tools.sh
+```
 
-# 적용
+dev-tools.sh는 다음 단계를 순서대로 실행합니다:
+
+| 단계 | 내용 |
+|------|------|
+| Stage 0 | 로케일 설정 (ko_KR.UTF-8) |
+| Stage 1 | 시스템 패키지 업데이트 |
+| Stage 2 | Node.js 설치 (asdf + npm 글로벌 디렉토리 설정) |
+| Stage 3 | Python 설치 (asdf, 소스 컴파일) |
+| Stage 4 | pipx 설치 |
+| Stage 5 | AI 코딩 에이전트 설치 (Claude Code, OpenCode, Gemini CLI) |
+| Stage 6 | SuperClaude 프레임워크 설치 |
+| Stage 7 | GitHub CLI 설치 |
+| Stage 8 | 모던 CLI 도구 설치 (ripgrep, fd-find, jq) |
+| Stage 9 | lazygit 설치 (GitHub 최신 릴리스) |
+| Stage 10 | delta 설치 및 git 연동 설정 |
+| Stage 11 | Shell alias 추가 (.zshrc에 lg, rg 등) |
+
+> **참고**: Python 설치(Stage 3)는 소스 컴파일로 진행되어 수 분이 걸릴 수 있습니다.
+> 이미 설치된 도구가 있어도 멱등성이 보장되어 재실행 가능합니다.
+
+설치 완료 후 적용:
+
+```bash
 source ~/.zshrc
 ```
 
-설치 후 각 도구의 인증이 필요합니다:
+### 설치 후 인증
+
+각 도구별 인증이 필요합니다:
 
 ```bash
-claude          # Claude Code 인증
-opencode        # OpenCode 인증
-gemini          # Gemini CLI 인증
-gh auth login   # GitHub CLI 인증
-superclaude mcp # MCP 서버 설치 (선택)
+# Claude Code — Anthropic 계정으로 인증
+claude
+
+# OpenCode — AI 서비스 선택 후 인증
+opencode
+
+# Gemini CLI — Google 계정으로 인증
+gemini
+
+# GitHub CLI — GitHub 계정 인증
+gh auth login
+
+# SuperClaude MCP 서버 설치 (선택)
+superclaude mcp
+```
+
+모든 인증 완료 후 WSL 이미지를 내보내면 동일한 환경을 복제할 수 있습니다:
+
+```powershell
+# PowerShell에서
+wsl --export Ubuntu-24.04 "C:\Users\techjuice\Documents\dev\wsl-base.tar"
+```
+
+### 설치 확인
+
+```bash
+# 기본 환경 (setup.sh)
+zsh --version && asdf --version && fzf --version && eza --version && bat --version && zoxide --version
+
+# 개발 도구 (dev-tools.sh)
+node --version && npm --version
+python --version
+claude --version
+gh --version
+rg --version && fd --version && jq --version
+lazygit --version && delta --version
 ```
 
 ### Ubuntu 삭제 후 재설치하는 경우
@@ -254,6 +310,69 @@ wsl --shutdown
 
 ## 도구 사용법
 
+### AI 코딩 에이전트
+
+#### Claude Code
+
+Anthropic의 공식 AI 코딩 에이전트입니다. 터미널에서 코드를 작성하고, 디버깅하고, 설명을 받을 수 있습니다.
+
+```bash
+# 인증 (최초 1회)
+claude
+
+# 현재 디렉토리에서 Claude 실행
+claude
+
+# 파일을 컨텍스트로 포함하여 질문
+claude "이 코드에서 버그를 찾아줘"
+
+# 특정 작업 지시
+claude "README.md를 한국어로 번역해줘"
+```
+
+#### OpenCode
+
+오픈소스 AI 코딩 에이전트로 여러 AI 모델을 선택할 수 있습니다.
+
+```bash
+# 실행 (첫 실행 시 AI 서비스 선택)
+opencode
+```
+
+#### Gemini CLI
+
+Google의 AI 코딩 에이전트입니다.
+
+```bash
+# 인증 후 실행
+gemini
+
+# 특정 파일 분석
+gemini "이 함수를 최적화해줘"
+```
+
+#### SuperClaude
+
+Claude Code에 추가 명령어와 워크플로우를 제공하는 프레임워크입니다.
+
+```bash
+# 설치된 명령어 목록 확인
+superclaude --help
+
+# MCP 서버 목록 확인
+superclaude mcp --list
+
+# MCP 서버 대화형 설치
+superclaude mcp
+
+# Claude Code 내에서 SuperClaude 명령어 사용
+# /sc:implement  — 기능 구현
+# /sc:analyze    — 코드 분석
+# /sc:test       — 테스트 실행
+# /sc:git        — Git 작업
+# /sc:help       — 전체 명령어 목록
+```
+
 ### asdf (v0.18.0)
 
 v0.16.0부터 Go로 재작성되어 일부 명령어가 변경되었습니다.
@@ -312,9 +431,9 @@ zi            # 대화형 디렉토리 선택
 탭 자동완성 시 fzf 미리보기가 자동으로 작동합니다.
 
 ```bash
-cd <Tab>      # 디렉토리 목록 + eza 미리보기
+cd <Tab>             # 디렉토리 목록 + eza 미리보기
 git checkout <Tab>   # 브랜치 목록
-kill <Tab>    # 프로세스 목록 + 정보 미리보기
+kill <Tab>           # 프로세스 목록 + 정보 미리보기
 ```
 
 ### lazygit
@@ -325,12 +444,22 @@ lg            # lazygit 실행 (alias)
 
 터미널 기반 Git UI입니다. 스테이징, 커밋, 브랜치 관리, 리베이스 등을 키보드로 빠르게 수행할 수 있습니다.
 
+| 키 | 동작 |
+|----|------|
+| `space` | 파일 스테이징/언스테이징 |
+| `c` | 커밋 |
+| `p` | push |
+| `P` | pull |
+| `b` | 브랜치 메뉴 |
+| `?` | 도움말 |
+
 ### ripgrep (grep 대체)
 
 ```bash
 rg "검색어"           # 현재 디렉토리에서 재귀 검색 (smart-case 기본)
 rg "패턴" src/        # 특정 디렉토리에서 검색
 rg -t py "import"     # 파일 타입 필터링
+rg -l "TODO"          # 파일명만 출력
 ```
 
 ### fd (find 대체)
@@ -339,6 +468,7 @@ rg -t py "import"     # 파일 타입 필터링
 fd "패턴"             # 파일명 검색
 fd -e js              # 확장자로 검색
 fd -t d               # 디렉토리만 검색
+fd -t f --changed-within 1d   # 하루 내 변경된 파일
 ```
 
 ### delta (git diff)
@@ -348,6 +478,16 @@ git diff, git log, git show 실행 시 자동으로 적용됩니다.
 ```bash
 git diff              # side-by-side 컬러 diff
 git log -p            # 커밋별 변경 내용 (구문 강조)
+git show HEAD         # 최근 커밋 내용
+```
+
+### jq (JSON 처리)
+
+```bash
+cat data.json | jq '.'              # 예쁘게 출력 (pretty print)
+cat data.json | jq '.name'          # 특정 필드 추출
+cat data.json | jq '.items[]'       # 배열 펼치기
+curl -s api/endpoint | jq '.data'   # API 응답 파싱
 ```
 
 ### GitHub CLI
@@ -356,7 +496,11 @@ git log -p            # 커밋별 변경 내용 (구문 강조)
 gh repo clone owner/repo   # 레포지토리 클론
 gh pr create               # Pull Request 생성
 gh pr list                 # PR 목록 확인
+gh pr checkout 123         # PR 체크아웃
 gh issue list              # 이슈 목록 확인
+gh issue create            # 이슈 생성
+gh run list                # GitHub Actions 실행 목록
+gh run watch               # Actions 실행 상태 모니터링
 ```
 
 ---
@@ -436,6 +580,20 @@ rm -rf ~/.oh-my-zsh ~/.fzf ~/.asdf ~/.local/bin/asdf ~/.local/bin/bat
 ```bash
 ./dev-tools.sh
 ```
+
+### Python 설치가 너무 오래 걸리는 경우
+
+Python은 소스 컴파일 방식으로 설치됩니다. 컴파일 시간은 시스템 성능에 따라 5~15분이 소요될 수 있습니다. 진행 중인 출력이 멈춰 보여도 정상입니다.
+
+### claude / opencode / gemini 명령어를 찾을 수 없는 경우
+
+dev-tools.sh 실행 후 `.zshrc`를 새로 불러와야 합니다:
+
+```bash
+source ~/.zshrc
+```
+
+또는 터미널을 재시작하세요.
 
 ### p10k 설정 마법사 다시 실행
 
