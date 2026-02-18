@@ -576,6 +576,7 @@ Ubuntu (각 인스턴스)
     │   └── fd                   # fd 심볼릭 링크
     ├── .asdf/                   # asdf 데이터 (플러그인, 버전)
     ├── .npm-global/             # npm 글로벌 패키지
+    ├── .opencode/               # OpenCode 바이너리 (~/.opencode/bin/opencode)
     ├── .tool-versions           # asdf 글로벌 런타임 버전
     ├── .zshrc                   # Zsh 설정
     ├── .p10k.zsh                # Powerlevel10k 설정
@@ -623,7 +624,7 @@ rm -rf ~/.oh-my-zsh ~/.fzf ~/.asdf ~/.local/bin/asdf ~/.local/bin/bat
 
 Python은 소스 컴파일 방식으로 설치됩니다. 컴파일 시간은 시스템 성능에 따라 5~15분이 소요될 수 있습니다. 진행 중인 출력이 멈춰 보여도 정상입니다.
 
-### claude / opencode / gemini 명령어를 찾을 수 없는 경우
+### claude / gemini 명령어를 찾을 수 없는 경우
 
 dev-tools.sh 실행 후 `.zshrc`를 새로 불러와야 합니다:
 
@@ -632,6 +633,18 @@ source ~/.zshrc
 ```
 
 또는 터미널을 재시작하세요.
+
+### opencode 명령어를 찾을 수 없는 경우
+
+OpenCode 인스톨러는 `$SHELL` 환경변수로 셸을 감지해 PATH를 추가합니다. `dev-tools.sh`가 `#!/bin/bash`로 실행되면 `.bashrc`에 PATH가 추가되어 zsh에서 인식되지 않는 경우가 있습니다.
+
+dev-tools.sh는 이 문제를 자동으로 수정합니다 (`~/.opencode/bin`을 `.zshrc`에 명시적으로 추가). 그래도 문제가 발생하면 수동으로 추가하세요:
+
+```bash
+echo 'export PATH="$HOME/.opencode/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+opencode
+```
 
 ### p10k 설정 마법사 다시 실행
 

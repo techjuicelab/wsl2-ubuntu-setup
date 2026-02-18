@@ -162,6 +162,16 @@ print_done "Claude Code $(claude --version 2>/dev/null || echo '(installed)') in
 # --- OpenCode ---
 print_step "Installing OpenCode..."
 curl -fsSL https://opencode.ai/install | bash
+# Installer detects shell from $SHELL — when running as bash script, it may
+# write to .bashrc instead of .zshrc. Explicitly ensure .zshrc has the PATH.
+if ! grep -q '\.opencode/bin' ~/.zshrc 2>/dev/null; then
+    cat >> ~/.zshrc << 'OPENCODEEOF'
+
+# opencode
+export PATH="$HOME/.opencode/bin:$PATH"
+OPENCODEEOF
+fi
+export PATH="$HOME/.opencode/bin:$PATH"
 print_done "OpenCode installed"
 
 # --- Gemini CLI ---
