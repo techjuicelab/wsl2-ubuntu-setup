@@ -131,43 +131,73 @@ SSH 키는 `C:\Users\techjuice\Documents\dev\.ssh`에 저장되어 모든 WSL �
 
 ## 설치 방법
 
-### 처음 설치하는 경우
+### 전체 설치 플로우
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  최초 설치                                                              │
+│                                                                         │
+│  1. 사전 준비 (폰트, WSL2)                                              │
+│  2. setup.sh        → 기본 환경 (zsh, asdf, fzf, eza, bat 등)          │
+│  3. dev-tools.sh    → 개발 도구 + AI 에이전트 + 자동 설정 복원          │
+│  4. 도구별 인증      → claude, opencode, gemini, gh auth login          │
+│  5. MCP 서버 설치    → sequential-thinking, context7, playwright 등     │
+│  6. 스킬 설치       → anthropics/skills 마켓플레이스 16종               │
+│  7. 설정 백업       → claude-config.sh backup (Windows에 저장)          │
+│  8. WSL 이미지 내보내기 → wsl --export (복제용 베이스 이미지)            │
+│                                                                         │
+├─────────────────────────────────────────────────────────────────────────┤
+│  인스턴스 복제 후                                                       │
+│                                                                         │
+│  1. ssh-setup.sh          → SSH 키 복원                                 │
+│  2. claude-config.sh restore → MCP + 스킬 + 설정 복원                  │
+│  3. claude                → 인증만 다시 (설정은 복원됨)                  │
+│                                                                         │
+├─────────────────────────────────────────────────────────────────────────┤
+│  Ubuntu 재설치 후                                                       │
+│                                                                         │
+│  최초 설치와 동일 (SSH 키, Claude 설정은 Windows 백업에서 자동 복원)     │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 최초 설치
+
+#### 1단계: 기본 환경 셋업
 
 Ubuntu에 진입한 후:
 
 ```bash
-# 1. Git 설정
+# Git 설정
 git config --global user.email "your-email@example.com"
 git config --global user.name "your-name"
 
-# 2. 레포지토리 클론
+# 레포지토리 클론
 cd ~
 git clone https://github.com/techjuicelab/wsl2-ubuntu-setup.git dotfiles
 
-# 3. 기본 환경 셋업
+# 기본 환경 셋업 실행
 cd dotfiles
 chmod +x setup.sh
 ./setup.sh
 
-# 4. Zsh 진입 (Powerlevel10k 설정 마법사 시작)
+# Zsh 진입 (Powerlevel10k 설정 마법사 자동 시작)
 zsh
-
-# 5. 설치 확인
-zsh --version
-asdf --version
-fzf --version
-eza --version
-bat --version
-zoxide --version
 ```
 
-### 개발 도구 설치 (선택)
+설치 확인:
 
-setup.sh 완료 후, AI 에이전트와 추가 개발 도구를 설치하려면:
+```bash
+zsh --version && asdf --version && fzf --version && eza --version && bat --version && zoxide --version
+```
+
+#### 2단계: 개발 도구 설치
 
 ```bash
 chmod +x dev-tools.sh
 ./dev-tools.sh
+source ~/.zshrc
 ```
 
 dev-tools.sh는 다음 단계를 순서대로 실행합니다:
@@ -181,7 +211,7 @@ dev-tools.sh는 다음 단계를 순서대로 실행합니다:
 | Stage 4 | pipx 설치 |
 | Stage 5 | AI 코딩 에이전트 설치 (Claude Code, OpenCode, Gemini CLI) |
 | Stage 6 | SuperClaude 프레임워크 설치 |
-| Stage 7 | Claude Code 설정 복원 (Windows 백업에서) |
+| Stage 7 | Claude Code 설정 복원 (Windows 백업이 있으면 자동 복원) |
 | Stage 8 | GitHub CLI 설치 |
 | Stage 9 | 모던 CLI 도구 설치 (ripgrep, fd-find, jq) |
 | Stage 10 | lazygit 설치 (GitHub 최신 릴리스) |
@@ -191,15 +221,14 @@ dev-tools.sh는 다음 단계를 순서대로 실행합니다:
 > **참고**: Python 설치(Stage 3)는 소스 컴파일로 진행되어 수 분이 걸릴 수 있습니다.
 > 이미 설치된 도구가 있어도 멱등성이 보장되어 재실행 가능합니다.
 
-설치 완료 후 적용:
+설치 확인:
 
 ```bash
-source ~/.zshrc
+node --version && python --version && claude --version && gh --version
+rg --version && fd --version && jq --version && lazygit --version && delta --version
 ```
 
-### 설치 후 인증
-
-각 도구별 인증이 필요합니다:
+#### 3단계: 도구별 인증
 
 ```bash
 # Claude Code — Anthropic 계정으로 인증
@@ -213,65 +242,67 @@ gemini
 
 # GitHub CLI — GitHub 계정 인증
 gh auth login
-
-# SuperClaude MCP 서버 설치 (선택)
-superclaude mcp
 ```
 
-모든 인증과 MCP 설정 완료 후, Claude Code 설정을 백업하세요:
+#### 4단계: MCP 서버 설치
+
+Claude Code의 기능을 확장하는 MCP 서버를 설치합니다.
 
 ```bash
-bash claude-config.sh backup
+# superclaude를 통해 MCP 서버 설치
+superclaude mcp --servers sequential-thinking --servers context7 --servers playwright
 ```
 
-그 후 WSL 이미지를 내보내면 동일한 환경을 복제할 수 있습니다:
-
-```powershell
-# PowerShell에서
-wsl --export Ubuntu-24.04 "C:\Users\techjuice\Documents\dev\wsl-base.tar"
-```
-
-### 설치 확인
+또는 Claude Code 내에서 직접 추가:
 
 ```bash
-# 기본 환경 (setup.sh)
-zsh --version && asdf --version && fzf --version && eza --version && bat --version && zoxide --version
-
-# 개발 도구 (dev-tools.sh)
-node --version && npm --version
-python --version
-claude --version
-gh --version
-rg --version && fd --version && jq --version
-lazygit --version && delta --version
+claude mcp add --transport stdio --scope user sequential-thinking -- npx -y @modelcontextprotocol/server-sequential-thinking
+claude mcp add --transport stdio --scope user context7 -- npx -y @upstash/context7-mcp
+claude mcp add --transport stdio --scope user playwright -- npx -y @playwright/mcp@latest
 ```
 
-### 인스턴스 복제 후 SSH 설정하는 경우
+설치 확인 (Claude Code 내에서):
 
-`wsl --import`로 복제한 인스턴스는 setup.sh가 이미 실행된 상태입니다. SSH 키만 별도로 설정합니다.
+```
+/mcp
+```
+
+> **추가 MCP 서버**: `superclaude mcp --list`로 설치 가능한 전체 서버 목록을 확인할 수 있습니다.
+
+#### 5단계: Claude Code 스킬 설치
+
+anthropics/skills 마켓플레이스를 추가하고 스킬을 설치합니다.
+
+Claude Code 내에서 실행:
+
+```
+/plugin marketplace add anthropics/skills
+/plugin install document-skills@anthropic-agent-skills
+/plugin install example-skills@anthropic-agent-skills
+```
+
+또는 터미널에서 직접 실행:
+
+```bash
+claude plugin marketplace add anthropics/skills
+claude plugin install document-skills@anthropic-agent-skills
+claude plugin install example-skills@anthropic-agent-skills
+```
+
+설치 확인 (Claude Code 내에서):
+
+```
+/plugin list
+```
+
+#### 6단계: 설정 백업
+
+모든 인증, MCP, 스킬 설정이 완료되면 Windows 호스트에 백업합니다.
+이 백업은 다른 WSL 인스턴스에서 `claude-config.sh restore` 또는 dev-tools.sh Stage 7로 자동 복원됩니다.
 
 ```bash
 cd ~/dotfiles
-bash ssh-setup.sh
-```
-
-- Windows 경로(`C:\Users\techjuice\Documents\dev\.ssh`)에 키가 있으면 `~/.ssh/`에 복원합니다.
-- 키가 없으면 새로 생성하고 Windows 경로에 백업한 뒤 공개키를 출력합니다. 출력된 공개키를 GitHub에 등록하세요.
-
-ssh-setup.sh가 SSH 키 설정 후 자동으로 dotfiles remote를 SSH로 전환합니다.
-
-### Claude Code 설정 백업/복원
-
-Claude Code의 설정, 커스텀 명령어, MCP 서버 설정을 Windows 호스트에 백업하여 여러 WSL 인스턴스 간 공유할 수 있습니다.
-
-```bash
-cd ~/dotfiles
-
-# 현재 설정을 Windows에 백업
 bash claude-config.sh backup
-
-# Windows 백업에서 설정 복원
-bash claude-config.sh restore
 ```
 
 백업 경로: `C:\Users\techjuice\Documents\dev\.claude-config\`
@@ -283,13 +314,44 @@ bash claude-config.sh restore
 | `plugins/` | `~/.claude/plugins/` | 스킬 마켓플레이스 + 설치된 스킬 |
 | `mcp-servers.json` | `~/.claude.json`의 `mcpServers` 키 | MCP 서버 설정만 추출 |
 
-> **참고**: 인증 정보(`.credentials.json`, `oauthAccount` 등)와 세션 데이터(`projects/`, `cache/` 등)는 백업에서 제외됩니다.
+> **참고**: 인증 정보(`.credentials.json`, `oauthAccount` 등)와 세션 데이터(`projects/`, `cache/` 등)는 백업에서 제외됩니다. 각 인스턴스에서 인증은 다시 해야 합니다.
 
-dev-tools.sh 실행 시 Windows 백업이 존재하면 자동으로 설정을 복원합니다(Stage 7).
+#### 7단계: WSL 이미지 내보내기 (선택)
+
+완성된 환경을 베이스 이미지로 내보내면 동일한 환경을 복제할 수 있습니다:
+
+```powershell
+# PowerShell에서
+wsl --shutdown
+wsl --export Ubuntu-24.04 "C:\Users\techjuice\Documents\dev\wsl-base.tar"
+```
+
+---
+
+### 인스턴스 복제 후 설정
+
+`wsl --import`로 복제한 인스턴스에서 SSH 키와 Claude Code 설정을 복원합니다.
+
+```bash
+cd ~/dotfiles
+
+# 1. SSH 키 복원 + dotfiles remote SSH 전환
+bash ssh-setup.sh
+
+# 2. Claude Code 설정 복원 (MCP + 스킬 + 명령어)
+bash claude-config.sh restore
+
+# 3. Claude Code 인증 (설정은 복원되었으므로 인증만)
+claude
+```
+
+> SSH 키는 Windows 경로에서 자동 복원됩니다. Claude Code 설정(MCP, 스킬, 명령어)도 Windows 백업에서 복원되지만, 인증은 인스턴스별로 다시 해야 합니다.
+
+---
 
 ### Ubuntu 삭제 후 재설치하는 경우
 
-SSH 키가 이미 Windows에 백업되어 있으므로 setup.sh가 자동으로 복원합니다.
+SSH 키와 Claude Code 설정이 이미 Windows에 백업되어 있으므로 자동으로 복원됩니다.
 
 PowerShell에서:
 
@@ -298,7 +360,7 @@ wsl --unregister Ubuntu-24.04
 wsl --install -d Ubuntu-24.04
 ```
 
-새 Ubuntu에서:
+새 Ubuntu에서 최초 설치 1~3단계를 실행합니다:
 
 ```bash
 git config --global user.email "your-email@example.com"
@@ -307,11 +369,14 @@ git config --global user.name "your-name"
 cd ~
 git clone https://github.com/techjuicelab/wsl2-ubuntu-setup.git dotfiles
 cd dotfiles
-chmod +x setup.sh
+chmod +x setup.sh dev-tools.sh
 ./setup.sh
-
 zsh
+./dev-tools.sh    # Stage 7에서 Claude Code 설정 자동 복원
+source ~/.zshrc
 ```
+
+> dev-tools.sh가 Stage 7에서 Windows 백업을 감지하면 MCP 서버, 스킬, 명령어를 자동으로 복원합니다. 인증(claude, gh auth login 등)만 다시 하면 됩니다.
 
 ---
 
@@ -715,6 +780,11 @@ Ubuntu (각 인스턴스)
     │   └── fd                   # fd 심볼릭 링크
     ├── .asdf/                   # asdf 데이터 (플러그인, 버전)
     ├── .npm-global/             # npm 글로벌 패키지
+    ├── .claude/                 # Claude Code 설정
+    │   ├── settings.json        # 전역 설정
+    │   ├── commands/sc/         # SuperClaude 명령어
+    │   └── plugins/             # 스킬 마켓플레이스 + 설치된 스킬
+    ├── .claude.json             # MCP 서버 설정 + 세션 데이터
     ├── .opencode/               # OpenCode 바이너리 (~/.opencode/bin/opencode)
     ├── .tool-versions           # asdf 글로벌 런타임 버전
     ├── .zshrc                   # Zsh 설정
