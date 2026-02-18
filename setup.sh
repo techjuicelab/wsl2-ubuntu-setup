@@ -157,6 +157,17 @@ alias ...='cd ../..'
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 EOF
 
+echo "=== 12. dotfiles remote SSH 전환 ==="
+DOTFILES_DIR="$(cd "$(dirname "$0")" && pwd)"
+CURRENT_REMOTE=$(git -C "$DOTFILES_DIR" remote get-url origin 2>/dev/null || true)
+if echo "$CURRENT_REMOTE" | grep -q "^https://github.com/"; then
+  SSH_REMOTE=$(echo "$CURRENT_REMOTE" | sed 's|https://github.com/|git@github.com:|')
+  git -C "$DOTFILES_DIR" remote set-url origin "$SSH_REMOTE"
+  echo "Remote 전환 완료: $SSH_REMOTE"
+else
+  echo "이미 SSH remote입니다: $CURRENT_REMOTE"
+fi
+
 echo "=== 셋업 완료! ==="
 echo "zsh 를 입력하거나 터미널을 재시작하세요."
 echo "Powerlevel10k 설정 마법사가 자동으로 시작됩니다."

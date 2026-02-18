@@ -218,11 +218,7 @@ bash ssh-setup.sh
 - Windows 경로(`C:\Users\techjuice\Documents\dev\.ssh`)에 키가 있으면 `~/.ssh/`에 복원합니다.
 - 키가 없으면 새로 생성하고 Windows 경로에 백업한 뒤 공개키를 출력합니다. 출력된 공개키를 GitHub에 등록하세요.
 
-SSH 복원 후 레포지토리 remote를 SSH로 변경:
-
-```bash
-git remote set-url origin git@github.com:techjuicelab/wsl2-ubuntu-setup.git
-```
+ssh-setup.sh가 SSH 키 설정 후 자동으로 dotfiles remote를 SSH로 전환합니다.
 
 ### Ubuntu 삭제 후 재설치하는 경우
 
@@ -246,9 +242,6 @@ git clone https://github.com/techjuicelab/wsl2-ubuntu-setup.git dotfiles
 cd dotfiles
 chmod +x setup.sh
 ./setup.sh
-
-# SSH 복원 후 remote를 SSH로 변경
-git remote set-url origin git@github.com:techjuicelab/wsl2-ubuntu-setup.git
 
 zsh
 ```
@@ -315,11 +308,7 @@ cd ~/dotfiles
 bash ssh-setup.sh
 ```
 
-Windows 경로에 키가 있으면 자동으로 복원됩니다. 이후 레포지토리 remote를 SSH로 변경:
-
-```bash
-git remote set-url origin git@github.com:techjuicelab/wsl2-ubuntu-setup.git
-```
+Windows 경로에 키가 있으면 자동으로 복원됩니다. dotfiles remote도 자동으로 SSH로 전환됩니다.
 
 SSH 연결 확인:
 

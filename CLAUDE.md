@@ -23,6 +23,7 @@ Both scripts use `set -e` (exit on first error). dev-tools.sh uses colorized out
 - **npm global dir**: `~/.npm-global` (avoids sudo for `npm install -g`)
 - **~/.local/bin** prioritized in PATH for user-installed tools to override system versions
 - **WSL instance cloning** supported via `wsl --export` / `wsl --import`
+- **Automatic SSH remote switch**: Both `setup.sh` (Stage 12) and `ssh-setup.sh` automatically convert the dotfiles git remote from HTTPS to SSH after SSH key setup. Uses `sed` to transform `https://github.com/` → `git@github.com:`. If a new key was generated, a warning is shown that GitHub registration is required before pushing.
 - **OpenCode PATH fix**: OpenCode installs to `~/.opencode/bin/` and its installer uses `$SHELL` to detect which config file to update. When running under `#!/bin/bash`, it may write to `.bashrc` instead of `.zshrc`. dev-tools.sh explicitly appends `~/.opencode/bin` to `.zshrc` after installation to ensure it's always available in zsh.
 
 ## Verification Commands
