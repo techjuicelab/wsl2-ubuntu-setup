@@ -219,6 +219,14 @@ if [ -d "$WIN_CLAUDE_CONFIG" ]; then
         print_done "commands/ 복원 완료"
     fi
 
+    # plugins/ 복원 (마켓플레이스 + 설치된 스킬)
+    if [ -d "$WIN_CLAUDE_CONFIG/plugins" ]; then
+        mkdir -p ~/.claude
+        rm -rf ~/.claude/plugins
+        cp -r "$WIN_CLAUDE_CONFIG/plugins" ~/.claude/plugins
+        print_done "plugins/ 복원 완료 (마켓플레이스 + 스킬)"
+    fi
+
     # MCP 서버 설정 복원 (mcpServers 키만 merge)
     if [ -f "$WIN_CLAUDE_CONFIG/mcp-servers.json" ]; then
         # jq가 없으면 먼저 설치 (Stage 9에서 다시 설치해도 idempotent)

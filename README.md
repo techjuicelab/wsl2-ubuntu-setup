@@ -247,6 +247,7 @@ bash claude-config.sh restore
 |-----------|------|------|
 | `settings.json` | `~/.claude/settings.json` | 전역 설정 |
 | `commands/` | `~/.claude/commands/` | SuperClaude 스킬 + 커스텀 명령어 |
+| `plugins/` | `~/.claude/plugins/` | 스킬 마켓플레이스 + 설치된 스킬 |
 | `mcp-servers.json` | `~/.claude.json`의 `mcpServers` 키 | MCP 서버 설정만 추출 |
 
 > **참고**: 인증 정보(`.credentials.json`, `oauthAccount` 등)와 세션 데이터(`projects/`, `cache/` 등)는 백업에서 제외됩니다.
@@ -573,6 +574,7 @@ Windows
     ├── .claude-config/          # Claude Code 설정 백업
     │   ├── settings.json
     │   ├── commands/
+    │   ├── plugins/             # 스킬 마켓플레이스 + 설치된 스킬
     │   └── mcp-servers.json
     ├── wsl-base.tar             # 베이스 이미지
     └── wsl/

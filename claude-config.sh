@@ -15,6 +15,7 @@ usage() {
   echo "백업 대상:"
   echo "  ~/.claude/settings.json        — 전역 설정"
   echo "  ~/.claude/commands/            — SuperClaude 스킬 + 커스텀 명령어"
+  echo "  ~/.claude/plugins/             — 스킬 마켓플레이스 + 설치된 스킬"
   echo "  ~/.claude.json (mcpServers)    — MCP 서버 설정만 추출"
   echo ""
   echo "백업 경로: $WIN_CONFIG"
@@ -55,6 +56,16 @@ backup() {
     backed_up=true
   else
     echo "건너뜀: ~/.claude/commands/ 없음"
+  fi
+
+  # plugins/ 백업 (마켓플레이스 + 설치된 스킬)
+  if [ -d "$CLAUDE_DIR/plugins" ] && [ -f "$CLAUDE_DIR/plugins/installed_plugins.json" ]; then
+    rm -rf "$WIN_CONFIG/plugins"
+    cp -r "$CLAUDE_DIR/plugins" "$WIN_CONFIG/plugins"
+    echo "백업 완료: plugins/ (마켓플레이스 + 설치된 스킬)"
+    backed_up=true
+  else
+    echo "건너뜀: ~/.claude/plugins/ 없음 또는 설치된 스킬 없음"
   fi
 
   # MCP 서버 설정 백업 (mcpServers 키만 추출)
@@ -116,6 +127,17 @@ restore() {
     restored=true
   else
     echo "건너뜀: 백업에 commands/ 없음"
+  fi
+
+  # plugins/ 복원 (마켓플레이스 + 설치된 스킬)
+  if [ -d "$WIN_CONFIG/plugins" ]; then
+    mkdir -p "$CLAUDE_DIR"
+    rm -rf "$CLAUDE_DIR/plugins"
+    cp -r "$WIN_CONFIG/plugins" "$CLAUDE_DIR/plugins"
+    echo "복원 완료: plugins/ → ~/.claude/plugins/"
+    restored=true
+  else
+    echo "건너뜀: 백업에 plugins/ 없음"
   fi
 
   # MCP 서버 설정 복원 (mcpServers 키만 merge)
