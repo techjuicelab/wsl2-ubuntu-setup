@@ -48,6 +48,39 @@ Windows 11 WSL2 환경에서 Ubuntu 개발 환경을 자동으로 구성하는 �
 | lazygit | 터미널 Git UI |
 | delta | Git diff 구문 강조 |
 
+### MCP 서버 (Claude Code 확장)
+
+dev-tools.sh 설치 후 `claude-config.sh backup`으로 백업하면 다른 인스턴스에서도 자동 복원됩니다.
+
+| 서버 | 설명 |
+|------|------|
+| sequential-thinking | 다단계 문제 해결 및 체계적 분석 |
+| context7 | 라이브러리 공식 문서 및 코드 예제 실시간 조회 |
+| playwright | 크로스 브라우저 E2E 테스트 및 자동화 |
+
+### Claude Code 스킬 (anthropics/skills)
+
+Claude Code 내에서 `/스킬이름`으로 사용하는 전문 스킬입니다.
+
+| 스킬 | 설명 |
+|------|------|
+| pdf | PDF 문서 생성 |
+| docx | Word 문서 생성 |
+| pptx | PowerPoint 프레젠테이션 생성 |
+| xlsx | Excel 스프레드시트 생성 |
+| doc-coauthoring | 문서 공동 작성 |
+| frontend-design | 프론트엔드 UI 디자인 |
+| canvas-design | 캔버스 기반 디자인 |
+| web-artifacts-builder | 웹 아티팩트 빌더 |
+| webapp-testing | 웹 애플리케이션 테스트 |
+| mcp-builder | MCP 서버 생성 |
+| skill-creator | 커스텀 스킬 생성 |
+| algorithmic-art | 알고리즘 아트 생성 |
+| theme-factory | 테마/스타일 시스템 생성 |
+| brand-guidelines | 브랜드 가이드라인 작성 |
+| internal-comms | 사내 커뮤니케이션 작성 |
+| slack-gif-creator | Slack GIF 생성 |
+
 ### Oh My Zsh 플러그인
 
 | 플러그인 | 설명 |
@@ -431,6 +464,83 @@ superclaude mcp
 # /sc:test       — 테스트 실행
 # /sc:git        — Git 작업
 # /sc:help       — 전체 명령어 목록
+```
+
+### MCP 서버
+
+Claude Code에서 자동으로 활성화됩니다. `/mcp`로 상태를 확인할 수 있습니다.
+
+#### sequential-thinking
+
+복잡한 문제를 단계별로 분석합니다. Claude Code가 자동으로 사용합니다.
+
+#### context7
+
+라이브러리 문서를 실시간으로 조회합니다. Claude Code 내에서 자동으로 활용되어 최신 문서 기반의 정확한 코드를 생성합니다.
+
+#### playwright
+
+웹 브라우저를 자동화하여 E2E 테스트를 수행합니다.
+
+```bash
+# Claude Code 내에서 사용 예시
+# "localhost:3000 페이지를 열어서 로그인 폼이 정상 동작하는지 테스트해줘"
+# "이 웹페이지 스크린샷을 찍어서 레이아웃 확인해줘"
+```
+
+#### MCP 서버 관리
+
+```bash
+# 설치된 MCP 서버 목록 확인
+superclaude mcp --list
+
+# 추가 서버 설치 (예: tavily 웹 검색)
+superclaude mcp --servers tavily
+
+# Claude Code 내에서 MCP 상태 확인
+# /mcp
+```
+
+### Claude Code 스킬
+
+Claude Code 내에서 `/스킬이름`으로 전문 스킬을 호출합니다. anthropics/skills 마켓플레이스에서 설치됩니다.
+
+```bash
+# Claude Code 내에서 사용 예시
+
+# PDF 문서 생성
+# /pdf "프로젝트 기획서를 PDF로 만들어줘"
+
+# Word 문서 생성
+# /docx "회의록을 docx 형식으로 작성해줘"
+
+# PowerPoint 생성
+# /pptx "서비스 소개 발표자료를 만들어줘"
+
+# Excel 스프레드시트 생성
+# /xlsx "매출 데이터를 스프레드시트로 정리해줘"
+
+# 프론트엔드 디자인
+# /frontend-design "로그인 페이지를 디자인해줘"
+
+# 웹 앱 테스트
+# /webapp-testing "폼 유효성 검사를 테스트해줘"
+
+# MCP 서버 생성
+# /mcp-builder "GitHub 이슈를 관리하는 MCP 서버를 만들어줘"
+
+# 커스텀 스킬 생성
+# /skill-creator "코드 리뷰 자동화 스킬을 만들어줘"
+```
+
+#### 스킬 관리
+
+```bash
+# 설치된 스킬 목록 확인 (Claude Code 내에서)
+# /plugin list
+
+# 마켓플레이스 업데이트
+# /plugin marketplace update
 ```
 
 ### asdf (v0.18.0)
