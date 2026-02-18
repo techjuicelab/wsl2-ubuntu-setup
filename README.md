@@ -75,26 +75,14 @@ wsl --install -d Ubuntu-24.04
 
 설치 중 Unix 사용자 이름과 비밀번호를 설정합니다.
 
-### 3. SSH 키 준비 (최초 1회)
+### 3. SSH 키 준비
 
-Ubuntu에 진입한 후 SSH 키를 생성하고 Windows에 백업합니다.
-이미 SSH 키가 `C:\Users\techjuice\Documents\dev\.ssh`에 있다면 이 단계는 건너뜁니다.
+SSH 키는 `C:\Users\techjuice\Documents\dev\.ssh`에 저장되어 모든 WSL 인스턴스가 공유합니다.
 
-```bash
-# SSH 키 생성
-ssh-keygen -t ed25519 -C "your-email@example.com"
-# 엔터 3번 (기본 경로, 비밀번호 없이)
+- **최초 설치 시**: setup.sh가 자동으로 키를 생성하고 공개키를 출력합니다. 출력된 공개키를 GitHub에 등록하세요.
+- **재설치 시**: Windows 경로에 키가 있으면 setup.sh가 자동으로 복원합니다. 별도 작업 불필요.
 
-# GitHub에 공개키 등록
-cat ~/.ssh/id_ed25519.pub
-# 출력값 복사 → GitHub.com → Settings → SSH and GPG keys → New SSH key
-
-# Windows에 백업
-mkdir -p "/mnt/c/Users/techjuice/Documents/dev/.ssh"
-cp ~/.ssh/id_ed25519* "/mnt/c/Users/techjuice/Documents/dev/.ssh/"
-```
-
-> **중요**: Windows에 백업해두면 Ubuntu를 삭제/재설치해도 SSH 키를 재사용할 수 있습니다.
+> **GitHub 공개키 등록**: https://github.com/settings/keys
 
 ---
 

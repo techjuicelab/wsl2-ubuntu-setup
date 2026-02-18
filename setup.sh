@@ -1,19 +1,28 @@
 #!/bin/bash
 set -e
 
-echo "=== 0. SSH 키 복사 ==="
+echo "=== 0. SSH 키 설정 ==="
 WIN_SSH="/mnt/c/Users/techjuice/Documents/dev/.ssh"
-if [ -f "$WIN_SSH/id_ed25519" ]; then
-  mkdir -p ~/.ssh
-  cp "$WIN_SSH/id_ed25519" ~/.ssh/
-  cp "$WIN_SSH/id_ed25519.pub" ~/.ssh/
-  chmod 700 ~/.ssh
-  chmod 600 ~/.ssh/id_ed25519
-  chmod 644 ~/.ssh/id_ed25519.pub
-  echo "SSH 키 복사 완료"
-else
-  echo "Windows SSH 키가 없습니다. 나중에 수동 설정하세요."
+mkdir -p "$WIN_SSH"
+
+if [ ! -f "$WIN_SSH/id_ed25519" ]; then
+  echo "SSH 키가 없습니다. Windows 공유 경로에 생성합니다..."
+  ssh-keygen -t ed25519 -f "$WIN_SSH/id_ed25519" -N "" -C "wsl2@$(hostname)"
+  echo ""
+  echo "GitHub 공개키 등록 필요:"
+  echo "  https://github.com/settings/keys"
+  echo ""
+  cat "$WIN_SSH/id_ed25519.pub"
+  echo ""
 fi
+
+mkdir -p ~/.ssh
+cp "$WIN_SSH/id_ed25519" ~/.ssh/
+cp "$WIN_SSH/id_ed25519.pub" ~/.ssh/
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/id_ed25519
+chmod 644 ~/.ssh/id_ed25519.pub
+echo "SSH 키 복사 완료"
 
 echo "=== 1. 패키지 업데이트 ==="
 sudo apt update && sudo apt upgrade -y
